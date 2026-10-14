@@ -1,0 +1,9 @@
+tokenizer,language,tokens/word,% words kept whole,% words in 3+ pieces,% unk
+NLLB-200,Hindi,1.2,85.21,4.0,0.0
+NLLB-200,Mandyali,1.74,46.41,17.22,0.0
+NLLB-200,Bilaspuri,1.7,51.04,17.84,0.5
+NLLB-200,Kangri,1.81,45.5,21.12,0.0
+IndicTrans2,Hindi,1.1,91.63,1.63,0.0
+IndicTrans2,Mandyali,1.45,63.31,7.12,0.01
+IndicTrans2,Bilaspuri,1.42,66.2,7.35,0.0
+IndicTrans2,Kangri,1.42,65.09,6.49,0.0

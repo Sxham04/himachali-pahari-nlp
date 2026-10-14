@@ -1,0 +1,7 @@
+input,accuracy,acc_hin,acc_mjl,acc_kfs,acc_xnr
+full verse,99.86,100.0,100.0,99.54,99.89
+first 1 words,72.36,85.3,75.89,65.33,62.92
+first 2 words,81.4,81.75,82.55,83.01,78.3
+first 3 words,90.87,94.37,91.73,88.29,89.09
+first 5 words,96.7,98.85,97.36,94.83,95.75
+first 10 words,99.2,99.89,99.66,98.16,99.08

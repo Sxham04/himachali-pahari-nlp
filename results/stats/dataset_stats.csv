@@ -1,0 +1,5 @@
+,verses,tokens,types,TTR %,hapax % of types,words/verse mean,words/verse median,chars/word,test OOV % tokens,test OOV % types
+Hindi,7346.0,169305.0,6292.0,3.72,34.79,23.05,22.0,3.62,1.29,10.92
+Mandyali,7346.0,180688.0,8768.0,4.85,44.73,24.6,23.0,3.89,3.3,21.99
+Bilaspuri,7346.0,186210.0,12909.0,6.93,48.8,25.35,24.0,3.89,5.37,27.43
+Kangri,7346.0,173439.0,9167.0,5.29,46.81,23.61,22.0,4.0,2.62,20.41

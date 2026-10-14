@@ -1,0 +1,6 @@
+.venv/
+.venv-it2/
+__pycache__/
+*.pyc
+*.xlsx
+data/bible_clean.tsv
