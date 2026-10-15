@@ -56,7 +56,6 @@ clean **test/development benchmark** for Hindi → Hamirpuri translation, and as
 | # | Hindi | Hamirpuri | English |
 |---|---|---|---|
 | 3 | आज बहुत ठंड है। | आज बड़ी ठंड लगादी | It is very cold today. |
-| 27 | मेरे पास समय नहीं है। | मिजोगे निया बकत | I don't have time. |
 | 88 | मैं अपने भाई के साथ आया हूँ। | मैं अपने पाई सौगी आउदा | I have come with my brother. |
 | 230 | बस में बहुत भीड़ थी। | बसा बिच बडी भिड़ थी | The bus was very crowded. |
 | 310 | साढ़े चार बजे बस आती है। | बस साडे चार बजे आऊंदी | The bus comes at half past four. |
