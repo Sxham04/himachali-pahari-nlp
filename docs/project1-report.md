@@ -78,6 +78,8 @@ letter chunks they share (a score called **chrF**, 0–100; higher = more simila
 | **Bilaspuri** | 24.7 | 29.2 | – | **33.0** |
 | **Kangri** | 25.4 | 27.5 | **33.0** | – |
 
+![How similar the languages are](../results/analysis/chrf_heatmap.png)
+
 **What this means:**
 1. **Bilaspuri and Kangri are the closest pair.** Mandyali sits a little apart.
 2. **The three Pahari languages are closer to each other than to Hindi**, though only by a
@@ -112,6 +114,8 @@ sentence. We trained it on the training books and tested it on John.
 | First 1 word | 72.4% |
 | _(random guessing)_ | _25%_ |
 
+![Accuracy by number of words](../results/dialect_id/accuracy_by_length.png)
+
 **What this means:**
 1. The four languages are **clearly different**: a simple program separates them almost
    perfectly, and needs only about 5 words to be right 97% of the time.
@@ -133,6 +137,8 @@ usually means the model understands it worse.
 |---|---|---|---|---|
 | NLLB (the model we will train) | 1.20 | 1.74 | 1.70 | 1.81 |
 | IndicTrans2 | 1.10 | 1.45 | 1.42 | 1.42 |
+
+![Pieces per word](../results/stats/fertility.png)
 
 **What this means:**
 1. Both models keep most Hindi words whole, but **break up about a third to a half of all
@@ -162,6 +168,8 @@ letters and words it shares with the correct translation; 100 = identical).
 | Copy (Hindi unchanged) | 21.0 | 18.8 | 20.0 |
 | IndicTrans2 → Dogri | 16.1 | 17.3 | 20.6 |
 | Gemma (5 examples) | 21.7 | 18.6 | 21.2 |
+
+![Translation scores](../results/baselines/scores_chrf.png)
 
 **What this means:**
 1. **No existing tool can translate into these languages.** The best one (Gemma) scores
@@ -202,6 +210,8 @@ As a check, we also gave it the 509 Hindi originals.
 |---|---|---|---|---|
 | Hamirpuri sentences | 6% | 6% | 40% | **48%** |
 | Hindi originals (check) | **96%** | 2% | 1% | 1% |
+
+![Hamirpuri check](../results/hamirpuri_check/shares.png)
 
 **What this means:**
 1. The check works: Hindi sentences are recognised as Hindi 96% of the time.
