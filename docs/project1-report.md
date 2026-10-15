@@ -252,9 +252,6 @@ on the laptop.
 **Target:** clearly beat a score of about **21** from Step 5. Reaching **30 or more** would be
 a clear, publishable improvement.
 
-After that: an optional human check (rating 50 outputs by hand), then the final written
-report, and sharing it with Dr. Shweta Chauhan.
-
 ---
 
 ## Limits to keep in mind
@@ -265,4 +262,3 @@ report, and sharing it with Dr. Shweta Chauhan.
   affects all results.
 - **Licences.** The Hindi and Kangri texts are openly licensed (CC BY-SA 4.0); the Mandyali
   and Bilaspuri licences are still being confirmed, so the data stays private for now.
-- **The Mandyali used here is the public Bible text**, not Dr. Chauhan's unpublished data.
