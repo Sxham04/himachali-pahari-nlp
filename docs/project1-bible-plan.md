@@ -99,11 +99,6 @@ Each one translates the John verses from Hindi. All are scored the same way (sec
   8 GB and trains in hours, not days. Precision: bf16. Max length: 256 tokens.
 - Stop training when the score on Romans (dev) stops improving. Then score once on John (test).
 
-### Part E: Human check (optional)
-
-Soham reads 50 Bilaspuri outputs from the best model and rates each 1–5 for meaning
-(is the meaning right?) and fluency (does it sound natural?). Numbers alone can miss this.
-
 ## 7. How we measure success
 
 - **chrF++** (main score, 0–100): how many letter and word pieces the output shares with the
