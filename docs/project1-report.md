@@ -1,6 +1,6 @@
 # Project 1 report: Hindi and three Pahari languages, studied with Bible data
 
-_Soham Sharma · plain-language report · status as of 2026-10-15 (Parts A, B, C + Hamirpuri check done; D next)_
+_Soham Sharma · plain-language report · status as of 2026-10-18 (Steps 0–7 done; Stage 2 next)_
 
 Technical details, every number and all figures: [`results/README.md`](../results/README.md).
 The plan this follows: [`project1-bible-plan.md`](project1-bible-plan.md).
@@ -169,8 +169,6 @@ letters and words it shares with the correct translation; 100 = identical).
 | IndicTrans2 → Dogri | 16.1 | 17.3 | 20.6 |
 | Gemma (5 examples) | 21.7 | 18.6 | 21.2 |
 
-![Translation scores](../results/baselines/scores_chrf.png)
-
 **What this means:**
 1. **No existing tool can translate into these languages.** The best one (Gemma) scores
    almost exactly the same as just returning the Hindi unchanged: at most about 1 point
@@ -228,6 +226,58 @@ As a check, we also gave it the 509 Hindi originals.
 
 ---
 
+## Step 7: Teaching a model the three languages (Stage 1)
+
+Following Dr. Shweta Chauhan's review, we fine-tuned **NLLB**, an open translation model that
+already knows Hindi, on the 6,045 training verses. We used **LoRA**, which trains small add-on
+layers (1.4% of the model) instead of the whole model, so it runs on a laptop GPU. We trained:
+
+- **three separate models**, one per language, and
+- **one joint model** that learns all three languages at once.
+
+Each was tested once on the 871 verses of John, which it had never seen. We report three scores:
+**chrF++** and **BLEU** (higher = better) and **TER** (how many edits are needed to fix the
+output; lower = better).
+
+| chrF++ on John | Mandyali | Bilaspuri | Kangri |
+|---|---|---|---|
+| Best existing tool (Step 5) | 21.7 | 18.8 | 21.2 |
+| **Our separate models** | **67.8** | 43.5 | 71.1 |
+| **Our joint model** | 67.0 | **44.5** | **71.3** |
+
+| BLEU / TER on John | Mandyali | Bilaspuri | Kangri |
+|---|---|---|---|
+| Best existing tool | 2.6 / 89.8 | 1.2 / 95.1 | 2.6 / 88.2 |
+| Our separate models | 46.7 / 35.4 | 17.3 / 66.5 | 51.0 / 31.6 |
+| Our joint model | 45.7 / 36.1 | 17.9 / 64.8 | 51.4 / 31.4 |
+
+![Translation scores](../results/scores/scores_chrf.png)
+
+**What this means:**
+1. **It works, by a wide margin.** Scores jump from about 21 to **68 (Mandyali), 44
+   (Bilaspuri) and 71 (Kangri)**. A statistical test confirms every model beats every existing
+   tool. The output reads like the real language, not Hindi:
+
+   | | John 1:1 |
+   |---|---|
+   | Hindi | आदि में वचन था, और वचन परमेश्वर के साथ था, और वचन परमेश्वर था। |
+   | Real Mandyali | सभी ले पैहले वचन था, होर वचन परमेसरा साउगी था, होर वचन ई परमेसर था। |
+   | Our Mandyali model | आदि मन्झ वचन था, होर वचन परमेसरा साउगी था, होर वचन परमेसर था। |
+
+2. **One joint model or three separate ones? It depends on the language**, and the answer
+   matches Step 2:
+   - **Bilaspuri gets better** with the joint model (+1.0, statistically significant). It is the
+     hardest language and close to Kangri, so it learns from Kangri's data.
+   - **Mandyali gets slightly worse** (−0.9, significant). It is the most different of the
+     three, so the others get in its way a little.
+   - **Kangri: no real difference.**
+3. **Bilaspuri is still the hardest** (44 vs about 70), just as Step 1 predicted: it has the most
+   varied vocabulary and the most unseen words.
+4. **One caution:** each language's training and test verses come from the same translation
+   team, so the model also learns that team's style. On everyday sentences, scores will be lower.
+
+---
+
 ## What we have shown so far
 
 1. **The data is usable**, after careful cleaning that found and fixed real errors.
@@ -237,20 +287,20 @@ As a check, we also gave it the 509 Hindi originals.
    Indian model or a modern AI chatbot.
 4. **Hamirpuri sits between Kangri and Bilaspuri**, with words of its own, so it deserves
    its own dataset.
+5. **The gap can be closed:** a small fine-tuned model lifts translation quality from about 21
+   to 44–71 chrF++, and training the languages together helps the hardest one (Bilaspuri).
 
-That gap is the main reason this project matters, and the core argument for the paper.
+These results are the core of the paper.
 
 ---
 
 ## What comes next
 
-**Part D: train our own translator.** We will take NLLB, an open translation model that
-already knows Hindi, and teach it Mandyali, Bilaspuri and Kangri using the 6,045 training
-verses. The method (LoRA) trains small add-on layers instead of the whole model, so it fits
-on the laptop.
-
-**Target:** clearly beat a score of about **21** from Step 5. Reaching **30 or more** would be
-a clear, publishable improvement.
+**Stage 2 (set by Dr. Chauhan):**
+1. **How much data is needed?** Retrain with 25%, 50%, 75% and 100% of the training verses and
+   compare the scores.
+2. **What goes wrong?** Collect 20–30 incorrect translations per language and explain each
+   mistake.
 
 ---
 

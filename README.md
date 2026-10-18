@@ -23,18 +23,19 @@ _Soham Sharma (B.Tech CSE, DIT University; native speaker of Hamirpuri and Bilas
 | How close are the languages? | Bilaspuri–Kangri closest (chrF 33.0); all three closer to each other than to Hindi (24.7–26.6) |
 | Can a computer tell them apart? | 99.9% accuracy on full verses, 90.9% on just 3 words (char n-gram + logistic regression) |
 | Can existing tools translate Hindi into them? | **No.** IndicTrans2 (→ Dogri) and Gemma 3 4B (5-shot) score 16–22 chrF++, no better than copying the Hindi (19–21) |
+| Can a fine-tuned model translate them? | **Yes.** LoRA on NLLB-600M: chrF++ **67.8 Mandyali, 44.5 Bilaspuri, 71.3 Kangri** (vs ~21 for existing tools); a joint model helps Bilaspuri (+1.0), slightly hurts Mandyali (−0.9) |
 | Where does Hamirpuri fit? | Between Kangri (48%) and Bilaspuri (40%); Kangri-like genitive (`दा/दे/दी`) but its own pronouns (`असां`, `तुसां`) |
 
 <p>
 <img src="results/analysis/chrf_heatmap.png" width="32%">
-<img src="results/baselines/scores_chrf.png" width="38%">
+<img src="results/scores/scores_chrf.png" width="38%">
 <img src="results/hamirpuri_check/shares.png" width="28%">
 </p>
 
 ## Next
 
-**Part D:** fine-tune NLLB-200 (600M) with LoRA on the Bible training books (Hindi → all three
-languages), target: clearly beat ~21 chrF++. Then extend to Hamirpuri.
+**Stage 2:** data-size ablation (25/50/75/100% of training data) and error analysis
+(20–30 incorrect translations per language). Then extend to Hamirpuri.
 
 ## Repository layout
 
@@ -44,7 +45,7 @@ languages), target: clearly beat ~21 chrF++. Then extend to Hamirpuri.
 | `docs/project1-bible-plan.md` | project plan and methods |
 | `docs/hamirpuri-dataset-card.md` | Hamirpuri dataset: design, collection, review, statistics, examples |
 | `results/` | all numbers, figures and model outputs (`results/README.md` explains each) |
-| `src/` | scripts: `data.py` (clean + split), `analysis.py` (Part A), `dialect_id.py` (Part B), `stats.py` (statistics, tokenizer fertility), `run_indictrans2.py` / `run_gemma.py` / `evaluate.py` (Part C), `hamirpuri_check.py` |
+| `src/` | scripts: `data.py` (clean + split), `analysis.py` (Part A), `dialect_id.py` (Part B), `stats.py` (statistics, tokenizer fertility), `run_indictrans2.py` / `run_gemma.py` (Part C baselines), `finetune.py` (Stage 1/2 LoRA), `evaluate.py` (all scores), `make_share.py` (image/Excel/PDF for sharing), `hamirpuri_check.py` |
 | `data/sample_bible_20.tsv` | 20 aligned verses as a sample |
 
 The full datasets are not included yet: the Mandyali and Bilaspuri Bible licences are being
@@ -59,6 +60,7 @@ uv run python src/data.py
 uv run python src/analysis.py
 uv run python src/dialect_id.py
 uv run python src/stats.py
+uv run python src/finetune.py --langs mjl   # also kfs, xnr, or all three for the joint model
 uv run python src/evaluate.py
 ```
 

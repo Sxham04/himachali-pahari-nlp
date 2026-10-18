@@ -99,6 +99,22 @@ Each one translates the John verses from Hindi. All are scored the same way (sec
   8 GB and trains in hours, not days. Precision: bf16. Max length: 256 tokens.
 - Stop training when the score on Romans (dev) stops improving. Then score once on John (test).
 
+### Revised plan from Dr. Chauhan's review (2026-10-16)
+
+Dr. Chauhan reviewed the report ("dataset cleaning and initial analysis look good") and set the
+experiments for the paper. These replace Parts D and E above.
+
+**Stage 1 (do first):**
+1. Fine-tune **NLLB with LoRA** for Hindi → Mandyali, Bilaspuri, Kangri.
+2. Train **three separate models** (one per language) **and one joint multilingual model**
+   (all three languages together).
+3. Score **all models** with **BLEU, chrF++ and TER** (and re-score the Part C baselines the
+   same way, so every row of the results table is comparable).
+
+**Stage 2 (after Stage 1): ablation and error analysis**
+4. **Data-size ablation:** train with 25%, 50%, 75% and 100% of the training data and compare.
+5. **Error analysis:** pick 20–30 incorrect translations per language and explain each mistake.
+
 ## 7. How we measure success
 
 - **chrF++** (main score, 0–100): how many letter and word pieces the output shares with the

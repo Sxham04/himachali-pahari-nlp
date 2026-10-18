@@ -1,0 +1,16 @@
+system,language,chrF++,BLEU,spBLEU,TER,chrF++ vs Hindi,p vs best baseline,p vs separate,aborted
+Copy (Hindi source),Mandyali,20.96,2.08,2.79,90.22,100.0,,,0
+IndicTrans2-1B (→ Dogri),Mandyali,16.13,0.45,1.45,101.24,19.62,,,0
+Gemma 3 4B (5-shot),Mandyali,21.75,2.64,5.53,89.76,40.06,,,0
+NLLB-LoRA separate,Mandyali,67.82,46.67,57.25,35.41,25.0,0.001,,0
+NLLB-LoRA joint,Mandyali,66.96,45.67,56.59,36.08,25.15,0.001,0.001,0
+Copy (Hindi source),Bilaspuri,18.77,1.21,3.12,95.06,100.0,,,0
+IndicTrans2-1B (→ Dogri),Bilaspuri,17.27,0.56,1.83,98.39,19.62,,,0
+Gemma 3 4B (5-shot),Bilaspuri,18.62,1.68,3.92,99.64,34.62,,,2
+NLLB-LoRA separate,Bilaspuri,43.49,17.31,26.41,66.52,24.58,0.001,,0
+NLLB-LoRA joint,Bilaspuri,44.47,17.94,27.01,64.84,24.62,0.001,0.001,0
+Copy (Hindi source),Kangri,19.97,1.82,3.43,89.65,100.0,,,0
+IndicTrans2-1B (→ Dogri),Kangri,20.61,2.18,5.3,94.78,19.62,,,0
+Gemma 3 4B (5-shot),Kangri,21.15,2.59,6.12,88.24,39.58,,,12
+NLLB-LoRA separate,Kangri,71.08,50.98,62.63,31.55,23.39,0.001,,0
+NLLB-LoRA joint,Kangri,71.31,51.42,62.84,31.41,23.34,0.001,0.0719,0

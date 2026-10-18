@@ -1,0 +1,79 @@
+{
+  "run": "joint",
+  "langs": [
+    "mjl",
+    "kfs",
+    "xnr"
+  ],
+  "frac": 1.0,
+  "train_pairs": 18135,
+  "dev_pairs": 1290,
+  "base": "facebook/nllb-200-distilled-600M",
+  "tags": {
+    "mjl": "awa_Deva",
+    "kfs": "bho_Deva",
+    "xnr": "mag_Deva"
+  },
+  "lora": {
+    "r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "task_type": "SEQ_2_SEQ_LM",
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "out_proj",
+      "fc1",
+      "fc2"
+    ]
+  },
+  "lr": 0.0002,
+  "batch": 16,
+  "trainable_params": 8650752,
+  "best_checkpoint": "D:\\files\\code\\py\\proj\\reg-finetune\\models\\joint\\ckpt\\checkpoint-11340",
+  "best_eval_loss": 1.1243072748184204,
+  "evals": [
+    {
+      "epoch": 1.0,
+      "eval_loss": 1.6303
+    },
+    {
+      "epoch": 2.0,
+      "eval_loss": 1.3928
+    },
+    {
+      "epoch": 3.0,
+      "eval_loss": 1.2911
+    },
+    {
+      "epoch": 4.0,
+      "eval_loss": 1.2366
+    },
+    {
+      "epoch": 5.0,
+      "eval_loss": 1.1899
+    },
+    {
+      "epoch": 6.0,
+      "eval_loss": 1.1683
+    },
+    {
+      "epoch": 7.0,
+      "eval_loss": 1.1486
+    },
+    {
+      "epoch": 8.0,
+      "eval_loss": 1.1334
+    },
+    {
+      "epoch": 9.0,
+      "eval_loss": 1.129
+    },
+    {
+      "epoch": 10.0,
+      "eval_loss": 1.1243
+    }
+  ],
+  "train_minutes": 133.5
+}

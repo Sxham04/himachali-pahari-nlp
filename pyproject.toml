@@ -3,9 +3,12 @@ name = "reg-finetune"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
+    "accelerate>=1.15.0",
+    "datasets>=5.1.0",
     "matplotlib>=3.11.2",
     "openpyxl>=3.1.5",
     "pandas>=3.0.6",
+    "peft>=0.21.2",
     "protobuf>=7.36.2",
     "sacrebleu>=2.6.0",
     "scikit-learn>=1.9.1",

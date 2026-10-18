@@ -154,7 +154,7 @@ What it says:
 ## Part C: translation baselines (`src/run_indictrans2.py`, `src/run_gemma.py`, `src/evaluate.py`, 2026-10-14)
 
 Hindi → each Pahari language on the test book, John (871 verses). Scores from sacrebleu
-([signatures](baselines/signatures.txt)): **chrF++** (main) and **spBLEU** (BLEU with the
+([signatures](scores/signatures.txt)): **chrF++** (main) and **spBLEU** (BLEU with the
 FLORES-200 SentencePiece tokenizer). "chrF++ vs Hindi" scores the output against the Hindi
 *source*: 100 = pure copy; high = the system stayed close to Hindi.
 
@@ -170,7 +170,7 @@ FLORES-200 SentencePiece tokenizer). "chrF++ vs Hindi" scores the output against
 | Gemma 3 4B (5-shot) | Bilaspuri | 18.62 | 3.92 | 34.62 | 2 |
 | Gemma 3 4B (5-shot) | Kangri | **21.15** | **6.12** | 39.58 | 12 |
 
-![baselines](baselines/scores_chrf.png)
+![baselines](scores/scores_chrf.png)
 
 Setup:
 - **Copy**: the Hindi verse unchanged.
@@ -183,7 +183,7 @@ Setup:
   reply that looped on one character ("token repeat limit reached", e.g. `अपणूंूंूं…`); the partial
   output is kept and scored.
 
-Examples: [baselines/examples.md](baselines/examples.md).
+Examples: [scores/examples.md](scores/examples.md).
 
 What it says:
 1. **No existing tool really translates into these languages.** The best system beats copying
@@ -246,3 +246,70 @@ What it says:
    `तुसां` ("you") and `बिच` ("in"). So Hamirpuri is not simply Kangri; it needs its own data.
 4. Caveats: one speaker (MA) and her spelling; short everyday sentences vs long Bible verses;
    the classifier may partly rely on each Bible's spelling habits.
+
+## Stage 1: LoRA fine-tuning of NLLB (`src/finetune.py`, 2026-10-18)
+
+Experiments set by Dr. Shweta Chauhan (2026-10-16): fine-tune NLLB with LoRA for Hindi →
+Mandyali, Bilaspuri, Kangri; **three separate models** and **one joint multilingual model**;
+score all with BLEU, chrF++ and TER.
+
+**Setup.** `facebook/nllb-200-distilled-600M` + LoRA (r 16, α 32, dropout 0.05 on q/k/v/out_proj,
+fc1, fc2; 8.65M trainable parameters = 1.4%), bf16, lr 2e-4, batch 16 (length-grouped), warmup
+5%, ≤ 10 epochs, early stopping (patience 2) on dev (Romans) loss, best epoch kept. Test: John,
+beam 5. NLLB has no codes for these languages, so each borrows one (same in every model):
+Mandyali `awa_Deva`, Bilaspuri `bho_Deva`, Kangri `mag_Deva`. `ऴ` → `ळ` in Bilaspuri targets and
+in all references/outputs at scoring (NLLB has no `ऴ`). RTX 4060 Laptop (8 GB).
+
+| Run | Train pairs | Best epoch | Dev loss (best) | Train time |
+|---|---|---|---|---|
+| Mandyali separate | 6,045 | 10 | 0.853 | 38 min |
+| Bilaspuri separate | 6,045 | 10 | 1.819 | 43 min |
+| Kangri separate | 6,045 | 9 | 0.650 | 35 min |
+| Joint (all three) | 18,135 | 10 | 1.124 | 134 min |
+
+**Results on John (871 verses)** ([csv](scores/scores.csv), [signatures](scores/signatures.txt)).
+p-values: paired bootstrap on chrF++, 1,000 samples.
+
+| Language | System | chrF++ ↑ | BLEU ↑ | spBLEU ↑ | TER ↓ | p vs best baseline | p vs separate |
+|---|---|---|---|---|---|---|---|
+| Mandyali | best baseline (Gemma) | 21.75 | 2.64 | 5.53 | 89.76 | | |
+| Mandyali | **LoRA separate** | **67.82** | **46.67** | **57.25** | **35.41** | 0.001 | |
+| Mandyali | LoRA joint | 66.96 | 45.67 | 56.59 | 36.08 | 0.001 | 0.001 (worse) |
+| Bilaspuri | best baseline (Copy) | 18.77 | 1.21 | 3.13 | 95.06 | | |
+| Bilaspuri | LoRA separate | 43.49 | 17.31 | 26.41 | 66.52 | 0.001 | |
+| Bilaspuri | **LoRA joint** | **44.47** | **17.94** | **27.01** | **64.84** | 0.001 | 0.001 (better) |
+| Kangri | best baseline (Gemma) | 21.15 | 2.59 | 6.12 | 88.24 | | |
+| Kangri | LoRA separate | 71.08 | 50.98 | 62.63 | 31.55 | 0.001 | |
+| Kangri | **LoRA joint** | **71.31** | **51.43** | **62.84** | **31.41** | 0.001 | 0.072 (n.s.) |
+
+![scores](scores/scores_chrf.png)
+
+Example (John 1:1), more in [scores/examples.md](scores/examples.md):
+
+| | Text |
+|---|---|
+| Hindi | आदि में वचन था, और वचन परमेश्वर के साथ था, और वचन परमेश्वर था। |
+| Mandyali reference | सभी ले पैहले वचन था, होर वचन परमेसरा साउगी था, होर वचन ई परमेसर था। |
+| Mandyali LoRA separate | आदि मन्झ वचन था, होर वचन परमेसरा साउगी था, होर वचन परमेसर था। |
+| Kangri reference | सृष्टिया ते पैहले वचन था, कने वचन परमात्में सौगी था। कने वचन परमात्मां था। |
+| Kangri LoRA joint | शुरू च वचन था, कने वचन परमात्में सौगी था, कने वचन परमात्मां था। |
+
+What it says:
+1. **Fine-tuning works, by a wide margin.** Every LoRA model beats every baseline by 25–50 chrF++
+   points (p = 0.001): from ~21 to **67.8 Mandyali, 44.5 Bilaspuri, 71.3 Kangri**. TER drops from
+   ~90 to 31–65. The output is fluent text in the target variety (correct function words `होर`,
+   `कने`, `मन्झ`, `च`, `रा/दा`), not Hindi (chrF++ vs Hindi only 23–25).
+2. **Joint vs separate depends on the language**, and matches Part A:
+   - **Bilaspuri gains** from joint training (+0.98, p = 0.001). It is the hardest variety and
+     closest to Kangri, so it profits from the shared data.
+   - **Mandyali loses** a little (−0.85, p = 0.001). It is the most distinct of the three (Part A),
+     so the others interfere slightly.
+   - **Kangri: no significant difference** (+0.23, p = 0.07).
+   One joint model is also simpler to deploy (one adapter instead of three).
+3. **Bilaspuri stays far behind** (44 vs 68–71), as the dataset statistics predicted: largest
+   vocabulary and highest unseen-word rate (5.4% of test tokens), plus freer translation.
+4. **Caveat:** training and test text come from the same translation team per language, so the
+   models learn that team's style. Scores on everyday text will be lower (to be checked on the
+   Hamirpuri sentences and in the Stage 2 error analysis).
+5. Dev loss was still falling at epoch 10 for Mandyali, Bilaspuri and the joint model; more
+   epochs might add a little.

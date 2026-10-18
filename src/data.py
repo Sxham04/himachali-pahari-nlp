@@ -108,6 +108,11 @@ def read_clean() -> pd.DataFrame:
     return pd.read_csv(CLEAN, sep="\t", keep_default_na=False)
 
 
+def fold_lla(t: str) -> str:
+    """ऴ (U+0934, 928x in Bilaspuri) -> ळ: NLLB has no token for ऴ. Applied to MT targets and references alike."""
+    return t.replace("ऴ", "ळ")
+
+
 def check(df: pd.DataFrame) -> None:
     assert clean_text("आस्सा रे l") == "आस्सा रे।"
     assert words("हे भाईयो, हऊँ!") == ["हे", "भाईयो", "हऊँ"]
