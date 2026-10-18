@@ -271,8 +271,16 @@ output; lower = better).
    - **Mandyali gets slightly worse** (−0.9, significant). It is the most different of the
      three, so the others get in its way a little.
    - **Kangri: no real difference.**
-3. **Bilaspuri is still the hardest** (44 vs about 70), just as Step 1 predicted: it has the most
-   varied vocabulary and the most unseen words.
+3. **Bilaspuri is still the hardest** (44 vs about 70). This is most likely about *this Bible
+   translation*, not the language itself:
+   - **Most varied wording:** 12,909 different words (vs about 9,000 for the others), half of
+     them used only once, which points to inconsistent spelling. A word seen once is hard to learn.
+   - **More unseen words in the test:** 5.4% of John's words never appear in training (vs 2.6–3.3%).
+   - **Freer translation:** it paraphrases more. In John 1:1 it says "सृष्टिया ते पैहले" (before
+     creation) where Hindi says "आदि में" (in the beginning); our model wrote "आदि च", which is
+     correct but gets no credit.
+   - **Noisiest source:** this text had the shifted verses in 1 Corinthians; small misalignments
+     may remain.
 4. **One caution:** each language's training and test verses come from the same translation
    team, so the model also learns that team's style. On everyday sentences, scores will be lower.
 
@@ -301,6 +309,81 @@ These results are the core of the paper.
    compare the scores.
 2. **What goes wrong?** Collect 20–30 incorrect translations per language and explain each
    mistake.
+
+---
+
+## How we did it, and why
+
+A short guide to every method and model, and the reason we chose it.
+
+### Preparing the data
+
+| What | Why |
+|---|---|
+| **Cleaning before anything else** (removing pasted, empty and misaligned verses; fixing the Mandyali full stop) | Every later number depends on the verses really matching. One shifted block would teach the model wrong translations and make test scores meaningless. |
+| **Splitting by book** (train 25 books, check on Romans, test on John) | If verses from the same book were in both training and test, the model could "remember" answers. Whole books keep the test honest. John repeats the other gospels least, so it is the fairest test. |
+| **Test set used only once, at the very end** | Choosing settings by looking at the test scores would quietly inflate them. Romans is used for all decisions instead. |
+
+### Measuring similarity and telling languages apart
+
+| Method | What it does | Why we chose it |
+|---|---|---|
+| **chrF between aligned verses** (Step 2) | Counts shared letter chunks between the same verse in two languages | Works at the letter level, so it gives credit for related words with different endings or spellings (`परमेसर` / `परमेशर`). Word-level measures would miss this. |
+| **Weighted log-odds** (typical words) | Finds words much more common in one language than another, adjusted for chance | A standard, well-tested way to pick out characteristic words without being fooled by rare ones. |
+| **Letter-pattern classifier** (TF-IDF on 1–4 letter chunks + logistic regression, Step 3) | Learns which letter patterns belong to which language | Simple, fast (runs on a normal CPU in minutes) and very strong for telling closely related languages apart. Letter chunks capture word endings and spellings, which is exactly where these languages differ. A big neural model would add cost without much gain. |
+| **Word-splitting count** (tokenizer fertility, Step 4) | Counts how many pieces a model cuts each word into | A quick, model-free way to see whether a translation model "knows" a language before training anything. |
+
+### The translation systems
+
+| System | What it is | Why we included it |
+|---|---|---|
+| **Copy** | Returns the Hindi unchanged | The floor: since these languages share many words with Hindi, copying already scores something. Any useful system must beat it. |
+| **IndicTrans2-1B** (AI4Bharat) | The strongest open translation model for Indian languages | It represents the best existing Indian MT. It doesn't support our languages, so we asked for **Dogri**, the closest Pahari language it knows. |
+| **Gemma 3 4B** (Google), 5 examples | A small open AI chatbot model, run locally with Ollama | Represents the "just ask an AI" approach. 4B is the largest that runs comfortably on an 8 GB laptop GPU. Open and local, so anyone can repeat the test (closed tools like ChatGPT or Google Translate can change any day and don't support these languages). |
+| **NLLB-200-distilled-600M + LoRA** (our models) | Meta's open translation model for 200 languages, adapted to ours | See below. |
+
+**Why NLLB?**
+- It already translates **Hindi** well and knows many related North Indian languages, so it starts
+  close to our target.
+- It is the most widely used open model for **low-resource translation research**, so our results
+  are easy to compare with other papers.
+- The **600M "distilled"** version is small and fast enough to fine-tune on an 8 GB laptop GPU.
+- Note for later: NLLB's licence allows research use but not commercial use.
+
+**Why LoRA?**
+- Instead of changing all 600 million numbers in the model, LoRA trains small **add-on layers
+  (1.4% of the model)**. This fits on the laptop, trains in about 35–45 minutes per language,
+  and is less likely to over-fit with only 6,000 training verses.
+- The result is a small file (about 35 MB) per language that sits on top of the original model,
+  easy to share and swap.
+
+**Other choices inside the training:**
+
+| Choice | Why |
+|---|---|
+| **Borrowed language codes** (Mandyali uses Awadhi's code, Bilaspuri Bhojpuri's, Kangri Magahi's) | NLLB needs a code to know which language to write, and has none for ours. Borrowing unused codes is a standard trick; training then teaches the model what each code now means. |
+| **`ऴ` written as `ळ`** | NLLB has no symbol for `ऴ`, so it could never write it. We converted it in the training text and in every reference, so all systems are scored the same way. |
+| **Early stopping on Romans** | Training stops when the check score stops improving, and the best version is kept, which avoids over-training. |
+| **Beam search (5)** when translating | The model compares 5 candidate translations at each step instead of 1, which usually gives better sentences. |
+| **Separate vs joint models** (Dr. Chauhan's design) | Tests whether the three languages help each other when learned together. |
+
+### Scoring and checking the results
+
+| Method | What it measures | Why |
+|---|---|---|
+| **chrF++** (main score) | Shared letter chunks and words with the correct translation (0–100) | Gives partial credit for near-correct words, which suits languages with many word endings and no fixed spelling. Recommended for Indian languages. |
+| **BLEU** and **spBLEU** | Shared whole words / word pieces | The long-standing standard; reported so other papers can compare. spBLEU splits words the same way for every language, which is fairer for Indian scripts. |
+| **TER** | How many edits are needed to turn the output into the correct translation (lower = better) | Easy to interpret, and added at Dr. Chauhan's request. |
+| **sacrebleu** | The software that computes all of the above | The standard tool in MT papers; it records its exact settings, so anyone gets identical numbers. |
+| **Paired bootstrap test** | Re-scores 1,000 random re-samplings of the test verses | Tells whether a difference between two systems is real or could be luck. Expected in any MT paper. |
+
+### The Hamirpuri check
+
+| What | Why |
+|---|---|
+| Run the language identifier (Step 3) on the Hamirpuri sentences | A cheap way to place a new language among known ones without any Hamirpuri training data. |
+| Also run it on the Hindi originals | A control: if those didn't come out as Hindi, the method wouldn't be trustworthy. |
+| Report only totals | The sentences are family data and stay private. |
 
 ---
 
