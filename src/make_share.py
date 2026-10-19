@@ -2,7 +2,7 @@
 
 Devanagari is rendered by headless Chrome (matplotlib can't shape Indic scripts properly).
 Run: uv run --with markdown python src/make_share.py   (after src/data.py)
-Writes to share/ (git-ignored): bible_verses.png, bible_sample.xlsx, project1-report.pdf
+Writes to share/ (git-ignored): bible_verses.png, bible_sample.xlsx, one PDF per report in REPORTS
 """
 import html
 import re
@@ -19,6 +19,7 @@ from data import LANGS, NAMES, ROOT, read_clean, words
 OUT = ROOT / "share"
 CHROME = Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe")
 SAMPLE_N = 50
+REPORTS = ["project1-report", "stage1-report"]  # docs/<name>.md -> share/<name>.pdf
 IMAGE_REFS = ["JHN.1.1", "LUK.6.31", "JHN.15.12"]  # short, well-known verses
 FONT = "'Nirmala UI', 'Mangal', 'Noto Sans Devanagari', sans-serif"
 
@@ -127,14 +128,15 @@ def spaced_lists(md: str) -> str:
     return "\n".join(out)
 
 
-def report_pdf() -> None:
-    md = (ROOT / "docs" / "project1-report.md").read_text(encoding="utf-8")
+def report_pdf(name: str) -> None:
+    md = (ROOT / "docs" / f"{name}.md").read_text(encoding="utf-8")
     md = spaced_lists(md)
     body = markdown.markdown(md, extensions=["tables", "sane_lists"])
     page = f"""<html><head><meta charset="utf-8"><style>
       @page {{ size: A4; margin: 16mm 15mm; }}
       body {{ font-family:{FONT}; font-size:11pt; line-height:1.5; color:#222; }}
       h1 {{ font-size:20pt; color:#1f2a44; margin-bottom:2px; }}
+      h3 {{ page-break-after:avoid; }}
       h2 {{ font-size:14pt; color:#1f2a44; border-bottom:1px solid #ddd; padding-bottom:3px; margin-top:22px;
             page-break-after:avoid; }}
       table {{ border-collapse:collapse; margin:8px 0; font-size:10pt; page-break-inside:avoid; }}
@@ -147,7 +149,7 @@ def report_pdf() -> None:
     </style></head><body>{body}</body></html>"""
     src = ROOT / "docs" / "_report.html"  # in docs/ so ../results/ image paths resolve
     src.write_text(page, encoding="utf-8")
-    chrome(f"--print-to-pdf={OUT / 'project1-report.pdf'}", src.as_uri())
+    chrome(f"--print-to-pdf={OUT / f'{name}.pdf'}", src.as_uri())
     src.unlink()
 
 
@@ -156,7 +158,8 @@ def main() -> None:
     df = read_clean()
     verse_image(df)
     excel_sample(df)
-    report_pdf()
+    for name in REPORTS:
+        report_pdf(name)
     for f in sorted(OUT.iterdir()):
         print(f.name, f.stat().st_size)
 
