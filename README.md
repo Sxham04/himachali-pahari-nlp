@@ -5,7 +5,7 @@ Pradesh. None of them is supported by today's translation systems.
 
 _Soham Sharma (B.Tech CSE, DIT University; native speaker of Hamirpuri and Bilaspuri) · private preview, October 2026_
 
-**Start here:** [plain-language report](docs/project1-report.md) · [technical results](results/README.md) · [Hamirpuri dataset card](docs/hamirpuri-dataset-card.md)
+**Start here:** [Stage 1 report (LoRA fine-tuning)](docs/stage1-report.md) · [full plain-language report](docs/project1-report.md) · [technical results](results/README.md) · [Hamirpuri dataset card](docs/hamirpuri-dataset-card.md)
 
 ---
 
@@ -41,6 +41,7 @@ _Soham Sharma (B.Tech CSE, DIT University; native speaker of Hamirpuri and Bilas
 
 | Path | Contents |
 |---|---|
+| `docs/stage1-report.md` | Stage 1 (LoRA fine-tuning) report on its own |
 | `docs/project1-report.md` | plain-language report of everything so far |
 | `docs/project1-bible-plan.md` | project plan and methods |
 | `docs/hamirpuri-dataset-card.md` | Hamirpuri dataset: design, collection, review, statistics, examples |
