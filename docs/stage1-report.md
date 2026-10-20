@@ -17,7 +17,7 @@ hurts the most distinct one (Mandyali).
 
 ---
 
-## 1. What Dr. Chauhan asked for
+## 1. Goals
 
 1. Fine-tune NLLB using LoRA for Hindi → Mandyali, Bilaspuri and Kangri.
 2. Train **separate models** for each language and **one joint multilingual model** using all three.
