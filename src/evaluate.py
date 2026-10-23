@@ -2,15 +2,17 @@
 
 Run: uv run python src/evaluate.py   (missing systems are skipped)
 Reads results/baselines/ (Copy, IndicTrans2, Gemma) and results/finetune/<run>/<lang>.txt.
-Writes to results/scores/: scores.csv, scores_chrf.png, examples.md, signatures.txt
+Writes to results/scores/: scores.csv, scores_chrf.png, examples.md, signatures.txt; once Stage 2 data-size
+ablation runs exist (<run>_f25 etc.), also ablation.csv + ablation_chrf.png (chrF++ vs share of training data).
 
 Metrics (sacrebleu): chrF++ (main), BLEU (13a), spBLEU (FLORES-200 SentencePiece), TER (lower = better).
 "chrF++ vs Hindi" scores the output against the Hindi source: high = the system stayed close to Hindi.
-"p vs best baseline" / "p vs separate": paired bootstrap (1,000 samples) on chrF++ against the best baseline / the
-separate LoRA models, per language.
+"p vs best baseline" / "p vs separate": paired bootstrap (1,000 samples) on chrF++ against the best baseline / (joint
+models only) the separate LoRA models trained on the same share of data, per language.
 Outputs and references both go through fold_lla (ऴ -> ळ), since NLLB cannot write ऴ.
 """
 import json
+import re
 from pathlib import Path
 
 import matplotlib
@@ -25,7 +27,6 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 BASELINES, FINETUNE, OUT = (ROOT / "results" / d for d in ("baselines", "finetune", "scores"))
 TARGETS = ["mjl", "kfs", "xnr"]
-SEPARATE = "NLLB-LoRA separate"
 BASELINE_NAMES = ["Copy (Hindi source)", "IndicTrans2-1B (→ Dogri)", "Gemma 3 4B (5-shot)"]
 
 
@@ -42,6 +43,12 @@ def finetune_label(run: str) -> str:
     return f"{label} ({frac}% data)" if frac else label
 
 
+def data_pct(system: str) -> int:
+    """'NLLB-LoRA joint (25% data)' -> 25; every other system -> 100."""
+    m = re.search(r"\((\d+)% data\)", system)
+    return int(m[1]) if m else 100
+
+
 def load_systems(test: pd.DataFrame) -> dict[str, dict[str, list[str]]]:
     """{system: {lang: hyps in test order}}; separate per-language runs merge into one system."""
     n = len(test)
@@ -53,7 +60,7 @@ def load_systems(test: pd.DataFrame) -> dict[str, dict[str, list[str]]]:
             got = {d["ref"]: d["hyp"] for d in map(json.loads, path.open(encoding="utf-8"))}
             if set(test.ref) <= set(got):
                 systems.setdefault(BASELINE_NAMES[2], {})[c] = [got[r] for r in test.ref]
-    for run in sorted(FINETUNE.glob("*/"), key=lambda p: (p.name.startswith("joint"), p.name)):
+    for run in sorted(FINETUNE.glob("*/"), key=lambda p: ("_f" in p.name, p.name.startswith("joint"), p.name)):
         for c in TARGETS:
             if (path := run / f"{c}.txt").exists():
                 systems.setdefault(finetune_label(run.name), {})[c] = read_lines(path, n)
@@ -75,12 +82,13 @@ def score(systems: dict, test: pd.DataFrame, n_boot: int = 1000) -> tuple[pd.Dat
         lang_rows = [r for r in rows if r["language"] == NAMES[c]]
         best = max((r for r in lang_rows if r["system"] in BASELINE_NAMES), key=lambda r: r["chrF++"])["system"]
         models = [s for s in hyps if s not in BASELINE_NAMES]
-        for col, ref_sys, cands in [("p vs best baseline", best, models),
-                                    ("p vs separate", SEPARATE, [s for s in models if s != SEPARATE])]:
-            if cands and ref_sys in hyps and n_boot:
-                pvals = paired_p(ref_sys, cands, hyps, refs, n_boot)
-                for r in lang_rows:
-                    r[col] = pvals.get(r["system"])
+        if models and n_boot:
+            vs_best = paired_p(best, models, hyps, refs, n_boot)
+            # joint vs separate trained on the same share of data
+            vs_sep = {s: paired_p(sep, [s], hyps, refs, n_boot)[s] for s in models
+                      if "joint" in s and (sep := s.replace("joint", "separate")) in hyps}
+            for r in lang_rows:
+                r["p vs best baseline"], r["p vs separate"] = vs_best.get(r["system"]), vs_sep.get(r["system"])
     sigs = [str(m.get_signature()) for m in (chrf, bleu, spbleu, ter)]
     return pd.DataFrame(rows), sigs
 
@@ -94,6 +102,7 @@ def paired_p(ref_sys: str, cands: list[str], hyps: dict, refs: list, n_boot: int
 
 
 def plot(scores: pd.DataFrame) -> None:
+    scores = scores[scores.system.map(data_pct) == 100]  # ablation runs get their own chart
     piv = scores.pivot(index="language", columns="system", values="chrF++").loc[[NAMES[c] for c in TARGETS]]
     systems = list(dict.fromkeys(scores.system))
     fig, ax = plt.subplots(figsize=(7.5, 3.8))
@@ -111,6 +120,32 @@ def plot(scores: pd.DataFrame) -> None:
     plt.close(fig)
 
 
+def ablation(scores: pd.DataFrame) -> pd.DataFrame:
+    """chrF++ per (language, model) x share of training data; empty until a Stage 2 run exists."""
+    lora = scores[scores.system.str.startswith("NLLB-LoRA")]
+    if (lora.system.map(data_pct) == 100).all():
+        return pd.DataFrame()
+    lora = lora.assign(model=lora.system.str.replace(r" \(\d+% data\)", "", regex=True),
+                       data=lora.system.map(data_pct))
+    return lora.pivot_table(index=["language", "model"], columns="data", values="chrF++").round(2)
+
+
+def plot_ablation(table: pd.DataFrame) -> None:
+    langs = [NAMES[c] for c in TARGETS]
+    fig, ax = plt.subplots(figsize=(6.5, 3.8))
+    for (lang, model), row in table.iterrows():
+        ax.plot(row.index, row.values, marker="o", color=f"C{langs.index(lang)}",
+                ls="-" if "joint" in model else "--", label=f"{lang}, {model.split()[-1]}")
+    ax.set_xticks(table.columns, [f"{d}%" for d in table.columns])
+    ax.set_xlabel("share of training data")
+    ax.set_ylabel("chrF++ on John (higher = better)")
+    ax.legend(fontsize=7)
+    ax.set_title("Data-size ablation")
+    fig.tight_layout()
+    fig.savefig(OUT / "ablation_chrf.png", dpi=200)
+    plt.close(fig)
+
+
 def examples(systems: dict, test: pd.DataFrame, n: int = 5) -> str:
     pick = test[test.hin.map(lambda t: 8 <= len(words(t)) <= 14)].iloc[:: max(1, len(test) // 40)].head(n)
     lines = ["# Example outputs (John)", ""]
@@ -122,7 +157,7 @@ def examples(systems: dict, test: pd.DataFrame, n: int = 5) -> str:
         for c in TARGETS:
             lines.append(f"- **{NAMES[c]} reference:** {getattr(r, c)}")
             lines += [f"  - {name}: {by_lang[c][i]}" for name, by_lang in systems.items()
-                      if name not in BASELINE_NAMES[:2] and c in by_lang]
+                      if name not in BASELINE_NAMES[:2] and c in by_lang and data_pct(name) == 100]
         lines.append("")
     return "\n".join(lines)
 
@@ -142,6 +177,10 @@ def main() -> None:
     (OUT / "examples.md").write_text(examples(systems, test), encoding="utf-8")
     plot(scores)
     print(scores.round(3).to_string(index=False))
+    if not (table := ablation(scores)).empty:
+        table.to_csv(OUT / "ablation.csv")
+        plot_ablation(table)
+        print(table.to_string())
 
 
 if __name__ == "__main__":
@@ -149,4 +188,7 @@ if __name__ == "__main__":
     s, _ = score({BASELINE_NAMES[0]: {c: ["एक दो"] for c in TARGETS}}, t, n_boot=0)
     assert (s["chrF++"].round(6) == 100).all() and (s["TER"] == 0).all()
     assert finetune_label("joint_f25") == "NLLB-LoRA joint (25% data)" and finetune_label("kfs") == "NLLB-LoRA separate"
+    toy = pd.DataFrame({"system": ["NLLB-LoRA joint", "NLLB-LoRA joint (25% data)", BASELINE_NAMES[0]],
+                        "language": ["Kangri"] * 3, "chrF++": [70.0, 60.0, 20.0]})
+    assert ablation(toy.head(1)).empty and ablation(toy).loc[("Kangri", "NLLB-LoRA joint")].to_dict() == {25: 60.0, 100: 70.0}
     main()

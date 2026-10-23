@@ -4,13 +4,31 @@ IndicTrans2-1B (→ Dogri),Mandyali,16.13,0.45,1.45,101.24,19.62,,,0
 Gemma 3 4B (5-shot),Mandyali,21.75,2.64,5.53,89.76,40.06,,,0
 NLLB-LoRA separate,Mandyali,67.82,46.67,57.25,35.41,25.0,0.001,,0
 NLLB-LoRA joint,Mandyali,66.96,45.67,56.59,36.08,25.15,0.001,0.001,0
+NLLB-LoRA separate (25% data),Mandyali,60.13,36.43,47.91,43.66,25.84,0.001,,0
+NLLB-LoRA separate (50% data),Mandyali,63.9,41.72,52.62,39.61,25.38,0.001,,0
+NLLB-LoRA separate (75% data),Mandyali,66.31,44.9,55.67,36.89,25.05,0.001,,0
+NLLB-LoRA joint (25% data),Mandyali,59.13,35.07,46.17,44.39,26.52,0.001,0.002,0
+NLLB-LoRA joint (50% data),Mandyali,63.27,40.71,51.81,39.92,25.79,0.001,0.003,0
+NLLB-LoRA joint (75% data),Mandyali,65.82,44.25,55.05,37.04,25.71,0.001,0.01,0
 Copy (Hindi source),Bilaspuri,18.77,1.21,3.12,95.06,100.0,,,0
 IndicTrans2-1B (→ Dogri),Bilaspuri,17.27,0.56,1.83,98.39,19.62,,,0
 Gemma 3 4B (5-shot),Bilaspuri,18.62,1.68,3.92,99.64,34.62,,,2
 NLLB-LoRA separate,Bilaspuri,43.49,17.31,26.41,66.52,24.58,0.001,,0
 NLLB-LoRA joint,Bilaspuri,44.47,17.94,27.01,64.84,24.62,0.001,0.001,0
+NLLB-LoRA separate (25% data),Bilaspuri,39.18,13.16,20.86,69.49,26.25,0.001,,0
+NLLB-LoRA separate (50% data),Bilaspuri,41.84,15.58,24.14,67.59,25.31,0.001,,0
+NLLB-LoRA separate (75% data),Bilaspuri,42.91,16.72,25.58,66.26,24.85,0.001,,0
+NLLB-LoRA joint (25% data),Bilaspuri,40.34,14.24,22.2,68.88,25.62,0.001,0.001,0
+NLLB-LoRA joint (50% data),Bilaspuri,42.54,16.18,24.62,66.6,25.1,0.001,0.002,0
+NLLB-LoRA joint (75% data),Bilaspuri,43.6,17.51,26.04,65.53,24.77,0.001,0.001,0
 Copy (Hindi source),Kangri,19.97,1.82,3.43,89.65,100.0,,,0
 IndicTrans2-1B (→ Dogri),Kangri,20.61,2.18,5.3,94.78,19.62,,,0
 Gemma 3 4B (5-shot),Kangri,21.15,2.59,6.12,88.24,39.58,,,12
 NLLB-LoRA separate,Kangri,71.08,50.98,62.63,31.55,23.39,0.001,,0
 NLLB-LoRA joint,Kangri,71.31,51.42,62.84,31.41,23.34,0.001,0.0719,0
+NLLB-LoRA separate (25% data),Kangri,64.4,41.96,53.75,38.25,24.57,0.001,,0
+NLLB-LoRA separate (50% data),Kangri,68.58,47.53,59.11,33.98,23.8,0.001,,0
+NLLB-LoRA separate (75% data),Kangri,70.16,49.8,61.28,32.42,23.71,0.001,,0
+NLLB-LoRA joint (25% data),Kangri,64.17,41.5,53.52,38.78,24.34,0.001,0.1219,0
+NLLB-LoRA joint (50% data),Kangri,68.37,47.42,59.11,34.25,23.96,0.001,0.1089,0
+NLLB-LoRA joint (75% data),Kangri,70.07,49.7,61.35,32.5,23.64,0.001,0.2208,0

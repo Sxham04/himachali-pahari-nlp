@@ -5,7 +5,7 @@ Pradesh. None of them is supported by today's translation systems.
 
 _Soham Sharma (B.Tech CSE, DIT University; native speaker of Hamirpuri and Bilaspuri) · private preview, October 2026_
 
-**Start here:** [Stage 1 report (LoRA fine-tuning)](docs/stage1-report.md) · [full plain-language report](docs/project1-report.md) · [technical results](results/README.md) · [Hamirpuri dataset card](docs/hamirpuri-dataset-card.md)
+**Start here:** [Stage 1 report (LoRA fine-tuning)](docs/stage1-report.md) · [Stage 2 report (how much data is needed)](docs/stage2-report.md) · [full plain-language report](docs/project1-report.md) · [technical results](results/README.md) · [Hamirpuri dataset card](docs/hamirpuri-dataset-card.md)
 
 ---
 
@@ -24,6 +24,7 @@ _Soham Sharma (B.Tech CSE, DIT University; native speaker of Hamirpuri and Bilas
 | Can a computer tell them apart? | 99.9% accuracy on full verses, 90.9% on just 3 words (char n-gram + logistic regression) |
 | Can existing tools translate Hindi into them? | **No.** IndicTrans2 (→ Dogri) and Gemma 3 4B (5-shot) score 16–22 chrF++, no better than copying the Hindi (19–21) |
 | Can a fine-tuned model translate them? | **Yes.** LoRA on NLLB-600M: chrF++ **67.8 Mandyali, 44.5 Bilaspuri, 71.3 Kangri** (vs ~21 for existing tools); a joint model helps Bilaspuri (+1.0), slightly hurts Mandyali (−0.9) |
+| How much data is needed? | A quarter of the training verses (1,511) already gives 89–91% of the full score; gains shrink with more data; the joint-vs-separate pattern holds at every size |
 | Where does Hamirpuri fit? | Between Kangri (48%) and Bilaspuri (40%); Kangri-like genitive (`दा/दे/दी`) but its own pronouns (`असां`, `तुसां`) |
 
 <p>
@@ -34,19 +35,20 @@ _Soham Sharma (B.Tech CSE, DIT University; native speaker of Hamirpuri and Bilas
 
 ## Next
 
-**Stage 2:** data-size ablation (25/50/75/100% of training data) and error analysis
-(20–30 incorrect translations per language). Then extend to Hamirpuri.
+**Stage 2:** data-size ablation done (see the Stage 2 report); error analysis (30 incorrect
+translations per language, labelled by a native speaker) in progress. Then extend to Hamirpuri.
 
 ## Repository layout
 
 | Path | Contents |
 |---|---|
 | `docs/stage1-report.md` | Stage 1 (LoRA fine-tuning) report on its own |
+| `docs/stage2-report.md` | Stage 2 (data-size ablation) report on its own |
 | `docs/project1-report.md` | plain-language report of everything so far |
 | `docs/project1-bible-plan.md` | project plan and methods |
 | `docs/hamirpuri-dataset-card.md` | Hamirpuri dataset: design, collection, review, statistics, examples |
 | `results/` | all numbers, figures and model outputs (`results/README.md` explains each) |
-| `src/` | scripts: `data.py` (clean + split), `analysis.py` (Part A), `dialect_id.py` (Part B), `stats.py` (statistics, tokenizer fertility), `run_indictrans2.py` / `run_gemma.py` (Part C baselines), `finetune.py` (Stage 1/2 LoRA), `evaluate.py` (all scores), `make_share.py` (image/Excel/PDF for sharing), `hamirpuri_check.py` |
+| `src/` | scripts: `data.py` (clean + split), `analysis.py` (Part A), `dialect_id.py` (Part B), `stats.py` (statistics, tokenizer fertility), `run_indictrans2.py` / `run_gemma.py` (Part C baselines), `finetune.py` (Stage 1/2 LoRA), `stage2_wsl.sh` (Stage 2 runs in WSL2), `evaluate.py` (all scores), `error_analysis.py` (Stage 2 error sample), `make_share.py` (image/Excel/PDF for sharing), `hamirpuri_check.py` |
 | `data/sample_bible_20.tsv` | 20 aligned verses as a sample |
 
 The full datasets are not included yet: the Mandyali and Bilaspuri Bible licences are being
@@ -62,6 +64,7 @@ uv run python src/analysis.py
 uv run python src/dialect_id.py
 uv run python src/stats.py
 uv run python src/finetune.py --langs mjl   # also kfs, xnr, or all three for the joint model
+uv run python src/finetune.py --langs mjl kfs xnr --frac 0.25   # Stage 2: 25/50/75% of the data
 uv run python src/evaluate.py
 ```
 

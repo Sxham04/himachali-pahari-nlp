@@ -1,6 +1,6 @@
 # Project 1 report: Hindi and three Pahari languages, studied with Bible data
 
-_Soham Sharma · plain-language report · status as of 2026-10-18 (Steps 0–7 done; Stage 2 next)_
+_Soham Sharma · plain-language report · status as of 2026-10-23 (Steps 0–8 done; error analysis next)_
 
 Technical details, every number and all figures: [`results/README.md`](../results/README.md).
 The plan this follows: [`project1-bible-plan.md`](project1-bible-plan.md).
@@ -286,6 +286,34 @@ output; lower = better).
 
 ---
 
+## Step 8: How much data is needed? (Stage 2, data-size ablation)
+
+We trained all four models again on **25%, 50% and 75%** of the training verses (the same random
+verses for every language, each smaller set inside the bigger one) and compared them with the
+100% models from Step 7. Full details: [stage2-report.md](stage2-report.md).
+
+| chrF++ on John | 25% | 50% | 75% | 100% |
+|---|---|---|---|---|
+| Mandyali (separate) | 60.1 | 63.9 | 66.3 | 67.8 |
+| Bilaspuri (joint) | 40.3 | 42.5 | 43.6 | 44.5 |
+| Kangri (separate) | 64.4 | 68.6 | 70.2 | 71.1 |
+
+![Data-size ablation](../results/scores/ablation_chrf.png)
+
+**What this means:**
+1. **More data always helps, but less and less:** from 25% to 50% adds 2–4 points, from 75% to
+   100% only about 1.
+2. **A quarter of the data (1,511 verses) already gives about 90% of the full score**, because
+   NLLB already knows Hindi and most of the Hindi → Pahari changes are regular. Extra data mostly
+   fixes rare words. Good news for Hamirpuri: about 1,500 sentences should be enough for a useful
+   model.
+3. **The Step 7 finding holds at every size:** joint training always helps Bilaspuri (+0.7 to
+   +1.2) and always slightly hurts Mandyali (−0.5 to −1.0); Kangri never differs.
+4. **Bilaspuri's gap is not about data size:** Kangri with 25% of the data (64.4) beats Bilaspuri
+   with all of it (44.5).
+
+---
+
 ## What we have shown so far
 
 1. **The data is usable**, after careful cleaning that found and fixed real errors.
@@ -297,6 +325,8 @@ output; lower = better).
    its own dataset.
 5. **The gap can be closed:** a small fine-tuned model lifts translation quality from about 21
    to 44–71 chrF++, and training the languages together helps the hardest one (Bilaspuri).
+6. **Not much data is needed:** a quarter of the training verses already gives about 90% of the
+   full score, and the joint-vs-separate pattern holds at every data size.
 
 These results are the core of the paper.
 
@@ -304,11 +334,9 @@ These results are the core of the paper.
 
 ## What comes next
 
-**Stage 2 (set by Dr. Chauhan):**
-1. **How much data is needed?** Retrain with 25%, 50%, 75% and 100% of the training verses and
-   compare the scores.
-2. **What goes wrong?** Collect 20–30 incorrect translations per language and explain each
-   mistake.
+**Rest of Stage 2 (set by Dr. Chauhan):** the data-size part is done (Step 8). Still to do:
+**what goes wrong?** 30 incorrect translations per language have been selected and are being
+labelled and explained by a native speaker.
 
 ---
 

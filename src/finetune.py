@@ -17,6 +17,7 @@ from datasets import Dataset
 from peft import LoraConfig, get_peft_model
 from transformers import (AutoModelForSeq2SeqLM, AutoTokenizer, DataCollatorForSeq2Seq, EarlyStoppingCallback,
                           Seq2SeqTrainer, Seq2SeqTrainingArguments)
+from transformers.trainer_utils import get_last_checkpoint
 
 from data import ROOT, fold_lla, read_clean
 
@@ -69,7 +70,8 @@ def main() -> None:
     ap.add_argument("--frac", type=float, default=1.0, help="share of training verses (Stage 2 ablation)")
     ap.add_argument("--epochs", type=int, default=10)
     ap.add_argument("--lr", type=float, default=2e-4)
-    ap.add_argument("--batch", type=int, default=16)
+    ap.add_argument("--batch", type=int, default=16, help="effective batch size")
+    ap.add_argument("--accum", type=int, default=1, help="gradient accumulation steps (less GPU memory, same batch)")
     args = ap.parse_args()
     name = run_name(args.langs, args.frac)
     model_dir, out_dir = ROOT / "models" / name, ROOT / "results" / "finetune" / name
@@ -89,7 +91,8 @@ def main() -> None:
         model=model,
         args=Seq2SeqTrainingArguments(
             output_dir=str(model_dir / "ckpt"), num_train_epochs=args.epochs, learning_rate=args.lr,
-            per_device_train_batch_size=args.batch, per_device_eval_batch_size=8,  # eval logits over the 256k vocab: 32 ran out of 8 GB
+            per_device_train_batch_size=args.batch // args.accum, gradient_accumulation_steps=args.accum,
+            per_device_eval_batch_size=8,  # eval logits over the 256k vocab: 32 ran out of 8 GB
             warmup_steps=0.05, lr_scheduler_type="linear", bf16=True, eval_strategy="epoch",
             save_strategy="epoch", save_total_limit=2, load_best_model_at_end=True,
             metric_for_best_model="eval_loss", greater_is_better=False, logging_steps=50,
@@ -99,7 +102,8 @@ def main() -> None:
         callbacks=[EarlyStoppingCallback(early_stopping_patience=2)],
     )
     t0 = time.time()
-    trainer.train()
+    ckpt = model_dir / "ckpt"
+    trainer.train(resume_from_checkpoint=ckpt.is_dir() and get_last_checkpoint(str(ckpt)))  # after a crash: go on from the last epoch
     train_min = (time.time() - t0) / 60
     model.save_pretrained(model_dir)
 
@@ -110,7 +114,7 @@ def main() -> None:
 
     evals = [{"epoch": h["epoch"], "eval_loss": round(h["eval_loss"], 4)} for h in trainer.state.log_history if "eval_loss" in h]
     log = {"run": name, "langs": args.langs, "frac": args.frac, "train_pairs": len(train), "dev_pairs": len(dev),
-           "base": BASE, "tags": {c: TAGS[c] for c in args.langs}, "lora": LORA, "lr": args.lr, "batch": args.batch,
+           "base": BASE, "tags": {c: TAGS[c] for c in args.langs}, "lora": LORA, "lr": args.lr, "batch": args.batch, "accum": args.accum,
            "trainable_params": trainable, "best_checkpoint": trainer.state.best_model_checkpoint,
            "best_eval_loss": trainer.state.best_metric, "evals": evals, "train_minutes": round(train_min, 1)}
     (out_dir / "train_log.json").write_text(json.dumps(log, indent=2, ensure_ascii=False), encoding="utf-8")

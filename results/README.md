@@ -313,3 +313,57 @@ What it says:
    Hamirpuri sentences and in the Stage 2 error analysis).
 5. Dev loss was still falling at epoch 10 for Mandyali, Bilaspuri and the joint model; more
    epochs might add a little.
+
+## Stage 2a: data-size ablation (`src/finetune.py --frac`, 2026-10-23)
+
+Second experiment set by Dr. Chauhan: train on 25%, 50%, 75% and 100% of the training data and
+compare. All 4 models (3 separate + joint) at 25/50/75%; the 100% runs are Stage 1.
+
+**Setup.** Same as Stage 1, except: (1) a seeded random subset of training **verses** (the same
+verses for every language and model; the subsets are nested, 25% ⊂ 50% ⊂ 75%); (2) micro-batch 8 ×
+2 gradient-accumulation steps = same effective batch 16 (at batch 16 the 8 GB GPU ran full under
+WSL2 and crashed); (3) trained in WSL2 Ubuntu (`src/stage2_wsl.sh`), because Windows Smart App
+Control blocks torch. Every run used all 10 epochs and its best epoch was the last.
+
+| Share | Train verses | Pairs (joint) | Dev loss mjl / kfs / xnr / joint | Train time sep. / joint |
+|---|---|---|---|---|
+| 25% | 1,511 | 4,533 | 1.115 / 2.233 / 0.925 / 1.473 | 5 min / 12 min |
+| 50% | 3,022 | 9,066 | 0.957 / 2.028 / 0.761 / 1.284 | 9–10 min / 22 min |
+| 75% | 4,534 | 13,602 | 0.886 / 1.915 / 0.696 / 1.198 | 11–15 min / 46 min |
+| 100% (Stage 1) | 6,045 | 18,135 | 0.853 / 1.819 / 0.650 / 1.124 | 35–43 min / 134 min |
+
+**chrF++ on John** ([ablation.csv](scores/ablation.csv); BLEU/TER per run in [scores.csv](scores/scores.csv)).
+"Joint − sep." = joint minus separate at the same share; p = paired bootstrap, 1,000 samples.
+
+| Language | Model | 25% | 50% | 75% | 100% |
+|---|---|---|---|---|---|
+| Mandyali | separate | 60.13 | 63.90 | 66.31 | 67.82 |
+| Mandyali | joint | 59.13 | 63.27 | 65.82 | 66.96 |
+| Mandyali | joint − sep. (p) | −1.00 (0.002) | −0.63 (0.003) | −0.49 (0.010) | −0.86 (0.001) |
+| Bilaspuri | separate | 39.18 | 41.84 | 42.91 | 43.49 |
+| Bilaspuri | joint | 40.34 | 42.54 | 43.60 | 44.47 |
+| Bilaspuri | joint − sep. (p) | +1.16 (0.001) | +0.70 (0.002) | +0.69 (0.001) | +0.98 (0.001) |
+| Kangri | separate | 64.40 | 68.58 | 70.16 | 71.08 |
+| Kangri | joint | 64.17 | 68.37 | 70.07 | 71.31 |
+| Kangri | joint − sep. (p) | −0.23 (0.12) | −0.21 (0.11) | −0.09 (0.22) | +0.23 (0.07) |
+
+![ablation](scores/ablation_chrf.png)
+
+What it says:
+1. **More data always helps, with diminishing returns.** Each step up adds less: Mandyali
+   (separate) +3.8, +2.4, +1.5; Kangri +4.2, +1.6, +0.9; Bilaspuri (joint) +2.2, +1.1, +0.9. The
+   curves are still rising at 100%, so more parallel data would still help, but each extra 1,500
+   verses buys only ~1 point now.
+2. **A quarter of the data already does most of the work.** With 1,511 verses the models reach
+   60 / 40 / 64 chrF++ (vs ~21 for the best baseline), i.e. 89–91% of the full-data score. Useful
+   for Hamirpuri: ~1,500 sentences should already give a usable model.
+3. **The joint-vs-separate pattern from Stage 1 holds at every data size**: Bilaspuri always gains
+   from joint training (+0.7 to +1.2, all p ≤ 0.002), Mandyali always loses a little (−0.5 to −1.0,
+   all p ≤ 0.01), Kangri never differs significantly. So it is a property of the languages, not
+   noise of one run.
+4. **Bilaspuri's gap is not about data size.** Kangri with 25% of the data (64.4) beats Bilaspuri
+   with 100% (44.5); Bilaspuri also gains least from more data. This fits the Stage 1 explanation
+   (inconsistent spelling and freer translation in the Bilaspuri Bible).
+5. **Caveat:** epochs were fixed at 10, so smaller shares also got fewer update steps (950 vs 3,780
+   for separate models), and every run was still improving at epoch 10. The curves therefore mix
+   "less data" with "less training"; the low-data points are slightly pessimistic.

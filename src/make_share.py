@@ -19,7 +19,7 @@ from data import LANGS, NAMES, ROOT, read_clean, words
 OUT = ROOT / "share"
 CHROME = Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe")
 SAMPLE_N = 50
-REPORTS = ["project1-report", "stage1-report"]  # docs/<name>.md -> share/<name>.pdf
+REPORTS = ["project1-report", "stage1-report", "stage2-report"]  # docs/<name>.md -> share/<name>.pdf
 IMAGE_REFS = ["JHN.1.1", "LUK.6.31", "JHN.15.12"]  # short, well-known verses
 FONT = "'Nirmala UI', 'Mangal', 'Noto Sans Devanagari', sans-serif"
 
