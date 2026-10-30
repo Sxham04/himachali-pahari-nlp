@@ -1,6 +1,6 @@
-# Himachali Pahari NLP: Mandyali, Bilaspuri, Kangri and Hamirpuri
+# Himachali Pahari NLP
 
-Resources and first experiments for low-resource **Western Pahari** languages of Himachal
+Resources and first experiments for low-resource **Western Pahari** languages of Himachal: Mandyali, Bilaspuri, Kangri and Hamirpuri
 Pradesh. None of them is supported by today's translation systems.
 
 _Soham Sharma (B.Tech CSE, DIT University; native speaker of Hamirpuri and Bilaspuri) · private preview, October 2026_
