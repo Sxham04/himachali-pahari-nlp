@@ -1,81 +1,74 @@
-# Hamirpuri elicitation dataset (dataset card, draft)
+# Hamirpuri sentence dataset (dataset card, draft)
 
-_Status 2026-10-15: 509 sentences translated and proof-read; 500 more (#510–1009) being translated._
+_Status October 2026 · data not released yet_
 
 ## What it is
 
 Everyday **Hindi sentences translated into Hamirpuri**, the Western Pahari variety of Hamirpur
-district, Himachal Pradesh. Hamirpuri has no published NLP resources. The set is designed as a
-clean **test/development benchmark** for Hindi → Hamirpuri translation, and as seed training data.
+district, Himachal Pradesh. Hamirpuri has no published NLP resources. The set is meant as a
+**test/development benchmark** for Hindi → Hamirpuri translation and as seed training data.
 
-## How the prompts were designed
+| Part | Sentences | How the Hamirpuri was made |
+|---|---|---|
+| #1–509 | 509 | Translated by a native speaker (speaker code MA) through a web app; proof-read by the author |
+| #510–1009 | 500 | Drafted by an LLM (Claude) from a rule-book; every sentence post-edited by the author (native speaker) |
+| **Total ready** | **1,009** | 6,786 Hindi words · 6,239 Hamirpuri tokens · 2,166 Hamirpuri word types |
+| #1010–1509 | 500 | Written (longer sentences, dialogues, stories); LLM drafts under review |
 
-- **509 Hindi prompts** (English gloss, domain and grammar tag for each), written for everyday
-  village and family life rather than formal text.
-- **30 domains**: health 38, food 36, general 29, kinship 29, household 28, weather 27, village 26,
-  farming 24, work 24, travel 22, social 19, festival 18, … plus dialogues and a short story.
-- **Grammar tags** on every prompt (309 distinct tags): tense and aspect (habitual, perfect,
-  progressive, past perfect), negation, imperatives (incl. negative and polite), questions,
-  ergative and dative-experiencer constructions, causatives, passives, conditionals and
-  counterfactuals, relative clauses, reported speech, feminine-speaker forms, and more.
-- **Graded length**: batch 1 (#1–200) averages 4.7 Hindi words; batch 2 (#201–509) runs 4 → 10
-  words. Overall: Hindi 6.1 words per sentence (max 11), Hamirpuri 5.5 (max 12).
-- **Local context**: Hamirpur, Sujanpur Holi fair, Baba Balak Nath, dham, madra, siddu, army
-  recruitment, monkeys in fields, step-wells.
-- Short **dialogues** (shop, phone call, neighbour visit) and a **story** are kept in order, so
-  they can stay together in one data split.
+## Prompt design
 
-## How it was collected
+- **35 domains** (food, health, kinship, household, village, work, weather, travel, farming,
+  festivals, government, religion, …) and **633 grammar tags** (tense/aspect, negation,
+  imperatives, questions, ergative and dative-subject clauses, causatives, passives, conditionals,
+  relative clauses, reported speech, feminine-speaker forms, honorifics).
+- Short sentences: Hindi 6.7 words on average (max 11); Hamirpuri 6.2 (max 12).
+- Local context: Hamirpur, Sujanpur fair, Baba Balak Nath, dham, madra, siddu, army recruitment.
+- Short **dialogues and stories** are kept in order so that each stays in one data split.
 
-- **Translator:** one native speaker of Hamirpuri (speaker code `MA`), translating from Hindi.
-- **Tool:** a custom Google Apps Script web app shows one Hindi prompt at a time and saves each
-  answer to a Google Sheet (append-only, with timestamps). The translator can skip a prompt.
-- **Pace:** 509 sentences in 10 days (2026-10-05 → 10-14), up to ~90 per day; median ~48 seconds
-  per sentence.
+## Collection and review
 
-## How it was reviewed
-
-- A second native speaker (the author) proof-read **every** sentence.
-- Two routes: small fixes go into a separate `corrected` column (the original is kept); a
-  prompt that needs redoing is **flagged** with a note, and the app shows it to the translator
-  again (18 sentences were redone this way).
-- **88 of 509 sentences (17.3%) were corrected**; on average 19.1% of characters changed in a
-  corrected sentence (mostly small spelling and word-form fixes).
-- Batch 1 (shorter): 5% corrected. Batch 2 (longer): 25% corrected. Longer sentences need more
-  review, so new batches are capped at 10 words.
-
-## Size
-
-| | Sentences | Word tokens | Word types |
-|---|---|---|---|
-| Hindi prompts | 509 | 3,126 | – |
-| Hamirpuri (proof-read) | 509 | 2,817 | 1,383 |
+- **Human part (#1–509):** a Google Apps Script app shows one Hindi prompt at a time and saves
+  each answer to a Google Sheet (append-only, timestamped). The author proof-read every answer: small fixes
+  go into a separate column (original kept); prompts that need redoing are flagged and re-served
+  to the translator. **100 of 509 (19.6%) were corrected.**
+- **Post-edited part (#510–1009):** Claude drafted translations from a Hindi → Hamirpuri rule-book
+  derived from the human sentences. The author read and fixed every draft: **191 of 500 drafts changed
+  (38%)**, 9.5% of words edited (HTER ≈ 9.5%; chrF++ draft vs final 90.8). The edits were then used
+  to improve the rule-book (e.g. copula usually dropped, `ई` with feminine subjects, `अजे` for
+  "still", `छोड़` for "quickly").
+- **Provenance is kept per sentence** (column *Source*), so results can be reported for the
+  human-only part separately.
 
 ## Examples
 
-| # | Hindi | Hamirpuri | English |
+| # | Hindi | Hamirpuri | Source |
 |---|---|---|---|
-| 3 | आज बहुत ठंड है। | आज बड़ी ठंड लगादी | It is very cold today. |
-| 88 | मैं अपने भाई के साथ आया हूँ। | मैं अपने पाई सौगी आउदा | I have come with my brother. |
-| 230 | बस में बहुत भीड़ थी। | बसा बिच बडी भिड़ थी | The bus was very crowded. |
-| 310 | साढ़े चार बजे बस आती है। | बस साडे चार बजे आऊंदी | The bus comes at half past four. |
-| 445 | अपने दादा-दादी की सेवा करना हमारा फ़र्ज़ है। | अपणे दादू-दादी दी सेवा करणा असां दा फर्ज ऐ | Looking after our grandparents is our duty. |
-| 497 | पुराने ज़माने में लोग मिट्टी के घरों में रहते थे। | पुराने जमाने बिच लोक मिट्टिया देयां करां बिच रैंदे थे | In the old days people lived in mud houses. |
+| 3 | आज बहुत ठंड है। | आज बड़ी ठंड लगादी | MA |
+| 88 | मैं अपने भाई के साथ आया हूँ। | मैं अपने पाई सौगी आउदा | MA |
+| 445 | अपने दादा-दादी की सेवा करना हमारा फ़र्ज़ है। | अपणे दादू-दादी दी सेवा करणा असां दा फर्ज ऐ | MA |
+| 607 | चाबी मेज़ की दराज़ में रखी है। | चाबी मेजे दिया दराजा च रखुदी | post-edited |
+| 740 | आज मंडी में बहुत भीड़ है। | अज मंडिया च बड़ी भीड़ ई | post-edited |
+| 956 | बेटी के जाने से माँ उदास है। | कुड़िया दे जाणे ते अमा उदास ई | post-edited |
 
-Spelling follows the translator's own Devanagari writing; Hamirpuri has no standard orthography.
+Spelling is as written by the translator and reviewer (Hamirpuri has no standard orthography).
+A separate normalised column (one spelling per form, e.g. `नि`, `मिजो`, `घरे`) is generated by
+script; the original text is never changed.
 
 ## First analysis
 
-A dialect identifier trained on the Bible data (Hindi / Mandyali / Bilaspuri / Kangri) assigns
-the Hamirpuri sentences to **Kangri 48%, Bilaspuri 40%, Mandyali 6%, Hindi 6%** (the Hindi prompts
-themselves: 96% Hindi). Hamirpuri uses the Kangri genitive `दा/दे/दी`, shares `कने` ("and") and `च`
-("in") with both neighbours, and has forms none of the Bible varieties use (`असां` "we",
-`तुसां` "you", `बिच` "in"). Details: [results/README.md](../results/README.md#hamirpuri-check-srchamirpuri_checkpy-2026-10-15).
+- **Distance from Hindi:** using the Hindi prompt unchanged as the "translation" scores
+  **chrF++ 23.3** (BLEU 2.4), close to the same baseline on the Bible data (Kangri 20.0,
+  Bilaspuri 18.8, Mandyali 21.0). Hindi output is not acceptable Hamirpuri.
+- **Closest varieties:** a dialect identifier trained on the Bible data assigns the human
+  sentences to **Kangri 48%, Bilaspuri 40%**, Mandyali 6%, Hindi 6%. Hamirpuri shares the Kangri
+  genitive `दा/दी/दे` and has forms the Bible varieties lack (`असां` "we", `तुसां` "you", `बिच` "in").
+- **Extra training data:** the published Hindi–Kangri corpora cover 65–79% of the Hamirpuri
+  vocabulary, so Kangri is the natural transfer language.
 
-## Plans and limits
+## Next steps
 
-- Target ~1,500 human sentences (~500 test, ~200 dev, ~800 train), with dialogues/stories kept in
-  one split; test and dev stay 100% human-written.
-- **One translator** so far: her spelling and word choices shape the data. More speakers would help.
-- Translated from Hindi prompts, so some Hindi influence on word order is possible.
-- Consent: the translator agreed to the data being used for research; only speaker codes appear.
+1. Finish batch 4 (#1010–1509) → about 1,500 sentence pairs.
+2. Fix the split (≈ 500 test / 200 dev / 800 train), dialogues and stories kept whole.
+3. Baselines for Hindi → Hamirpuri: copy (23.3 chrF++), zero-shot NLLB-600M LoRA models from the
+   Bible experiments, and a LoRA model trained on Hindi–Kangri data plus the Hamirpuri train split.
+

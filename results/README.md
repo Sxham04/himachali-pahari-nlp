@@ -1,6 +1,6 @@
 # Project 1 results (Bible data)
 
-Plan: [docs/project1-bible-plan.md](../docs/project1-bible-plan.md). Reproduce:
+Reproduce:
 
 ```bash
 uv run python src/data.py && uv run python src/analysis.py && uv run python src/dialect_id.py && uv run python src/stats.py

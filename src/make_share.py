@@ -81,7 +81,7 @@ def excel_sample(df: pd.DataFrame) -> None:
         ("Avg words/verse", " · ".join(f"{NAMES[c]} {df[c].map(lambda t: len(words(t))).mean():.1f}" for c in LANGS)),
         ("Licences", "Hindi: IRV 2019, Bridge Connectivity Solutions, CC BY-SA 4.0. Kangri: The Love Fellowship, "
                      "CC BY-SA 4.0. Mandyali, Bilaspuri: being confirmed. Shared here for research feedback only."),
-        ("Note", "The Mandyali text is the public Bible translation, unrelated to any unpublished Mandyali dataset."),
+        ("Note", "The Mandyali text is the public Bible translation."),
         ("This file", f"'Sample' sheet: {SAMPLE_N} verses from the training books, spread across books."),
     ]
     wb = Workbook()

@@ -3,7 +3,6 @@
 _Soham Sharma · plain-language report · status as of 2026-10-23 (Steps 0–8 done; error analysis next)_
 
 Technical details, every number and all figures: [`results/README.md`](../results/README.md).
-The plan this follows: [`project1-bible-plan.md`](project1-bible-plan.md).
 
 ---
 
