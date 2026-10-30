@@ -3,7 +3,7 @@
 Resources and first experiments for low-resource **Western Pahari** languages of Himachal: Mandyali, Bilaspuri, Kangri and Hamirpuri.
 None of them is supported by today's translation systems.
 
-_Soham Sharma (B.Tech CSE, DIT University; native speaker of Hamirpuri and Bilaspuri) · October 2026_
+_Soham Sharma (B.Tech CSE, DIT University) · October 2026_
 
 **Start here:** [Stage 1 report (LoRA fine-tuning)](docs/stage1-report.md) · [Stage 2 report (how much data is needed)](docs/stage2-report.md) · [full report](docs/project1-report.md) · [technical results](results/README.md) · [Hamirpuri dataset card](docs/hamirpuri-dataset-card.md)
 
